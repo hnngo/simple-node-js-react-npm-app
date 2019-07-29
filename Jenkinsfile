@@ -1,57 +1,18 @@
-pipeline {
-  agent any
+node {
+   stage('Preparation') {
+     checkout scm
+   }
 
-  environment {
-    CI = 'true'
-    registry = "hnngo/jenkins-docker-nodejs"
-    registryCredential = 'dockerhub'
-  }
-  
-  stages {
-    stage('Build') {
-      agent {
-        docker {
-          image 'node:alpine'
-        }
-      }
-      steps {
-        sh 'npm install'
-      }
-    }
+   stage('Test') {
+     nodejs(nodeJSInstallationName: 'nodejs') {
+       sh 'npm install --only=dev'
+       sh 'npm test'
+     }
+   }
 
-    stage('Test') {
-      agent {
-        docker {
-          image 'node:alpine'
-        }
-      }
-      steps {
-        sh './jenkins/scripts/test.sh'
-      }
-    }
-
-    stage('Deliver') {
-      agent {
-        docker {
-          image 'node:alpine'
-        }
-      }
-      steps {
-        sh './jenkins/scripts/deliver.sh'
-        input message: 'Finished using the web site? (Click "Proceed" to continue)'
-        sh './jenkins/scripts/kill.sh'
-      }
-    }
-
-    stage('Docker Publish Image') {
-      steps {
-        script {
-          docker.withRegistry( '', registryCredential ) {
-            def image = docker.build registry + ":$BUILD_NUMBER"
-            image.push()
-          }
-        }
-      }
-    }
-  }
+   stage('docker build/push') {
+     docker.withRegistry('https://index.docker.io/v1/', 'dockerhub') {
+       def app = docker.build("hnngo/jenkins-docker-nodejs", '.').push()
+     }
+   }
 }
