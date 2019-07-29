@@ -4,8 +4,6 @@ pipeline {
       label 'docker'
       image 'node:alpine'
       args '-p 3000:3000'
-      registryUrl 'https://registry.hub.docker.com'
-      registryCredential 'dockerhub'
     }
   }
 
@@ -39,8 +37,10 @@ pipeline {
     stage('Docker Publish Image') {
       steps {
         script {
-          def image = docker.build("${registry}")
-          image.push()
+          docker.withRegistry( '', registryCredential ) {
+            def image = docker.build registry + ":$BUILD_NUMBER"
+            image.push()
+          }
         }
       }
     }
