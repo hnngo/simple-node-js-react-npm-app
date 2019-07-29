@@ -4,6 +4,8 @@ pipeline {
       label 'docker'
       image 'node:alpine'
       args '-p 3000:3000'
+      registryUrl 'https://registry.hub.docker.com'
+      registryCredentialId 'dockerhub'
     }
   }
 
@@ -11,7 +13,6 @@ pipeline {
     CI = 'true'
     registry = "hnngo/jenkins-docker-nodejs"
     registryCredential = 'dockerhub'
-    dockerImage = ''
   }
   
   stages {
@@ -35,20 +36,11 @@ pipeline {
       }
     }
 
-    stage('Docker Build') {
-      steps {
-        script {
-          dockerImage = docker.build registry + ":$BUILD_NUMBER"
-        }
-      }
-    }
-
     stage('Docker Publish Image') {
       steps {
         script {
-          docker.withRegistry( '', registryCredential ) {
-            dockerImage.push()
-          }
+          def image = docker.build("${registry}")
+          image.push()
         }
       }
     }
