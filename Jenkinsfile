@@ -8,6 +8,9 @@ pipeline {
 
   environment {
     CI = 'true'
+    registry = "hnngo/jenkins-docker-nodejs"
+    registryCredential = 'dockerhub'
+    dockerImage = ''
   }
   
   stages {
@@ -31,10 +34,22 @@ pipeline {
       }
     }
 
-    stage('docker build/push') {
-     docker.withRegistry('https://index.docker.io/v1/', 'dockerhub') {
-       def app = docker.build("hnngo/jenkins-docker-nodejs", '.').push()
-     }
+    stage('Docker Build') {
+      steps {
+        script {
+          dockerImage = docker.build registry + ":$BUILD_NUMBER"
+        }
+      }
+    }
+
+    stage('Docker Publish Image') {
+      steps {
+        script {
+          docker.withRegistry( '', registryCredential ) {
+            dockerImage.push()
+          }
+        }
+      }
     }
   }
 }
