@@ -6,7 +6,7 @@ node {
    stage('Test') {
      nodejs(nodeJSInstallationName: 'nodejs') {
        sh 'npm install --only=dev'
-       sh 'npm test -e CI=true'
+       sh 'npm test --watchAll=false'
      }
    }
 
