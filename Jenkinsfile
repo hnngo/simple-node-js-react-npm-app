@@ -30,5 +30,11 @@ pipeline {
         sh './jenkins/scripts/kill.sh'
       }
     }
+
+    stage('docker build/push') {
+     docker.withRegistry('https://index.docker.io/v1/', 'dockerhub') {
+       def app = docker.build("hnngo/jenkins-docker-nodejs", '.').push()
+     }
+    }
   }
 }
