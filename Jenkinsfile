@@ -5,7 +5,7 @@ pipeline {
       image 'node:alpine'
       args '-p 3000:3000'
       registryUrl 'https://registry.hub.docker.com'
-      registryCredentialId 'dockerhub'
+      registryCredential 'dockerhub'
     }
   }
 
